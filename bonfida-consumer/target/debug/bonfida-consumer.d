@@ -1,0 +1,1 @@
+/Users/srinivasvalekar/Projects/rust/bonfida-rs/bonfida-consumer/target/debug/bonfida-consumer: /Users/srinivasvalekar/Projects/rust/bonfida-rs/bonfida-consumer/src/main.rs /Users/srinivasvalekar/Projects/rust/bonfida-rs/src/lib.rs
