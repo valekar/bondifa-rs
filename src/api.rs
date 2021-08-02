@@ -11,7 +11,7 @@ pub enum Serum {
     Volumes(String),
     OrderBooks(String),
     HistoricalPrices(String),
-    Pools { mintA: String, mintB: String },
+    Pools { mint_a: String, mint_b: String },
     PoolHistory6Hour,
     PoolHistory24Hour,
     Trade24Hour,
@@ -23,26 +23,26 @@ pub enum Serum {
 
 impl From<API> for String {
     fn from(item: API) -> Self {
-        String::from(match item {
+        match item {
             API::Serum(route) => match route {
-                Serum::Pairs => "/pairs",
+                Serum::Pairs => "/pairs".to_string(),
                 Serum::Trades(market_name) => format!("{}{}", "/trades/", market_name),
                 Serum::AddressTrade(market_address) => {
                     format!("{}{}", "/trades/address/", market_address)
                 }
-                Serum::AllRecentTrades => "/trades/all/recent",
+                Serum::AllRecentTrades => "/trades/all/recent".to_string(),
                 Serum::Volumes(market_name) => format!("{}{}", "/volumes/", market_name),
                 Serum::OrderBooks(market_name) => format!("{}{}", "/orderbooks/", market_name),
                 Serum::HistoricalPrices(market_name) => format!("{}{}", "/candles/", market_name),
-                Serum::Pools { mintA, mintB } => format!("{}{}/{}", "/pools/", mintA, mintB),
-                Serum::PoolHistory6Hour => "/pools",
-                Serum::PoolHistory24Hour => "/pools-recent",
-                Serum::Trade24Hour => "/trades",
-                Serum::Volume24Hour => "/pools/volumes/recent",
-                Serum::PoolVolumeHistory => "/pools/volumes",
-                Serum::PoolLiquidityHistory => "/pools/liquidity",
-                Serum::TradingView => "/tv",
+                Serum::Pools { mint_a, mint_b } => format!("{}{}/{}", "/pools/", mint_a, mint_b),
+                Serum::PoolHistory6Hour => "/pools".to_string(),
+                Serum::PoolHistory24Hour => "/pools-recent".to_string(),
+                Serum::Trade24Hour => "/trades".to_string(),
+                Serum::Volume24Hour => "/pools/volumes/recent".to_string(),
+                Serum::PoolVolumeHistory => "/pools/volumes".to_string(),
+                Serum::PoolLiquidityHistory => "/pools/liquidity".to_string(),
+                Serum::TradingView => "/tv".to_string(),
             },
-        })
+        }
     }
 }
