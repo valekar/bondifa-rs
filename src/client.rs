@@ -1,7 +1,8 @@
 use crate::api::API;
 use crate::errors::*;
 use reqwest::blocking::Response;
-use reqwest::StatusCode;
+use reqwest::header::{HeaderMap, HeaderName, HeaderValue, CONTENT_TYPE, USER_AGENT};
+use reqwest::{IntoUrl, StatusCode};
 use serde::de::DeserializeOwned;
 
 #[derive(Clone)]
@@ -34,6 +35,20 @@ impl Client {
         let response = client.get(url.as_str()).send()?;
 
         self.handler(response)
+    }
+
+    pub fn post<T: DeserializeOwned + IntoUrl>(&self, end_point: API, data: T) -> Result<T> {
+        let mut url: String = format!("{}{}", self.host, String::from(end_point));
+
+        let client = &self.inner_client;
+        let response = client.post(data).headers(self.build_headers()?).send()?;
+        self.handler(response)
+    }
+
+    fn build_headers(&self) -> Result<HeaderMap> {
+        let mut custom_headers = HeaderMap::new();
+        custom_headers.append(CONTENT_TYPE, HeaderValue::from_static("application/json"));
+        Ok(custom_headers)
     }
 
     fn handler<T: DeserializeOwned>(&self, response: Response) -> Result<T> {
