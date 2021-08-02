@@ -1,3 +1,7 @@
+use crate::client::Client;
+use crate::config::Config;
+use crate::general::General;
+
 #[allow(clippy::all)]
 pub enum API {
     SerumRest(Rest),
@@ -56,6 +60,23 @@ impl From<API> for String {
                 WebSocket::UnSubscribe => "/unsubscribe",
                 WebSocket::Subscribe => "/subscribe",
             }),
+        }
+    }
+}
+
+pub trait Bonfida {
+    fn new() -> Self;
+    fn new_with_config(config: &Config) -> Self;
+}
+
+impl Bonfida for General {
+    fn new() -> Self {
+        Self::new_with_config(&Config::default())
+    }
+
+    fn new_with_config(config: &Config) -> Self {
+        General {
+            client: Client::new(config.rest_api_endpoint.clone()),
         }
     }
 }
