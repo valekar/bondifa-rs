@@ -32,6 +32,8 @@ impl Client {
             }
         }
 
+        println!("Final query {}", url);
+
         let client = &self.inner_client;
         let response = client.get(url.as_str()).send()?;
 

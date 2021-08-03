@@ -1,6 +1,6 @@
 use crate::client::Client;
 use crate::config::Config;
-use crate::general::General;
+use crate::market::Market;
 
 #[allow(clippy::all)]
 pub enum API {
@@ -15,15 +15,6 @@ pub enum Rest {
     AllRecentTrades,
     Volumes(String),
     OrderBooks(String),
-    HistoricalPrices(String),
-    Pools { mint_a: String, mint_b: String },
-    PoolHistory6Hour,
-    PoolHistory24Hour,
-    Trade24Hour,
-    Volume24Hour,
-    PoolVolumeHistory,
-    PoolLiquidityHistory,
-    TradingView,
 }
 
 pub enum WebSocket {
@@ -44,15 +35,6 @@ impl From<API> for String {
                 Rest::AllRecentTrades => "/trades/all/recent".to_string(),
                 Rest::Volumes(market_name) => format!("{}{}", "/volumes/", market_name),
                 Rest::OrderBooks(market_name) => format!("{}{}", "/orderbooks/", market_name),
-                Rest::HistoricalPrices(market_name) => format!("{}{}", "/candles/", market_name),
-                Rest::Pools { mint_a, mint_b } => format!("{}{}/{}", "/pools/", mint_a, mint_b),
-                Rest::PoolHistory6Hour => "/pools".to_string(),
-                Rest::PoolHistory24Hour => "/pools-recent".to_string(),
-                Rest::Trade24Hour => "/trades".to_string(),
-                Rest::Volume24Hour => "/pools/volumes/recent".to_string(),
-                Rest::PoolVolumeHistory => "/pools/volumes".to_string(),
-                Rest::PoolLiquidityHistory => "/pools/liquidity".to_string(),
-                Rest::TradingView => "/tv".to_string(),
             },
 
             API::SerumWebSocket(route) => String::from(match route {
@@ -69,13 +51,13 @@ pub trait Bonfida {
     fn new_with_config(config: &Config) -> Self;
 }
 
-impl Bonfida for General {
+impl Bonfida for Market {
     fn new() -> Self {
         Self::new_with_config(&Config::default())
     }
 
     fn new_with_config(config: &Config) -> Self {
-        General {
+        Market {
             client: Client::new(config.rest_api_endpoint.clone()),
         }
     }
