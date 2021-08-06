@@ -1,15 +1,21 @@
+//use serde::de::{self, Visitor};
 use serde::{Deserialize, Serialize};
-
+//use std::fmt;
+//use std::marker::PhantomData;
+//use std::str::FromStr;
+use std::vec::Vec;
+//use void::Void;
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Pair {
     pub success: bool,
     pub data: Vec<String>,
 }
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Trade {
     pub success: bool,
+    #[serde(with = "string_or_struct")]
     pub data: Vec<TradeInformation>,
 }
 
@@ -21,7 +27,7 @@ pub struct TradeInformation {
     pub size: f64,
     pub side: String,
     pub time: i64,
-    pub order_id: u128,
+    pub order_id: String,
     pub fee_cost: f64,
     pub market_address: String,
 }
@@ -65,116 +71,39 @@ pub struct PriceSize {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct Candle {
-    pub success: bool,
-    pub data: Vec<CandleInformation>,
+pub struct NullData {
+    pub success: String,
+    pub data: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct CandleInformation {
-    pub close: f64,
-    pub open: f64,
-    pub low: f64,
-    pub high: f64,
-    pub start_time: i64,
-    pub market: String,
-    pub volume_base: f64,
-    pub volume_quote: f64,
-}
+pub(crate) mod string_or_struct {
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct Pool {
-    pub success: bool,
-    pub data: Vec<PoolInformation>,
-}
+    use std::fmt;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct PoolInformation {
-    pub name: String,
-    #[serde(rename = "pool_identifier")]
-    pub pool_identifier: String,
-    #[serde(rename = "liquidity_locked")]
-    pub liquidity_locked: f64,
-    pub apy: f64,
-    pub volume: f64,
-    pub mints: Vec<String>,
+    pub fn serialize<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        T: fmt::Display,
+        S: Serializer,
+    {
+        serializer.collect_str(value)
+    }
 
-    #[serde(rename = "liquidityA")]
-    pub liquidity_a: f64,
+    pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Vec<T>, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: Deserialize<'de> + Serialize,
+    {
+        #[derive(Deserialize, Serialize)]
+        #[serde(untagged)]
+        enum StringOrStruct<T> {
+            String(Option<String>),
+            Struct(Vec<T>),
+        }
 
-    #[serde(rename = "liquidityAinUsd")]
-    pub liquidity_a_in_usd: f64,
-
-    #[serde(rename = "liquidityB")]
-    pub liquidity_b: f64,
-
-    #[serde(rename = "liquidityBinUsd")]
-    pub liquidity_b_in_usd: f64,
-    pub supply: f64,
-    pub fees: f64,
-    pub time: i64,
-
-    pub volume_24h_a: f64,
-
-    pub volume_24h_b: f64,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct PoolTrade {
-    pub success: bool,
-    pub data: Vec<PoolTradeInformation>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct PoolTradeInformation {
-    pub signature: String,
-    pub symbol_source: String,
-    pub pool_source_mint: String,
-    pub symbol_destination: String,
-    pub pool_destination_mint: String,
-    pub amount_in: f64,
-    pub amount_out: f64,
-    pub pool_mint_authority: String,
-    pub time: i64,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct PoolVolume {
-    pub success: bool,
-    pub data: Vec<PoolVolumeInformation>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct PoolVolumeInformation {
-    pub mint_a: String,
-    pub mint_b: String,
-    pub volume: f64,
-    pub time: i64,
-}
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct PoolLiquidity {
-    pub success: bool,
-    pub data: Vec<PoolLiquidityInformation>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct PoolLiquidityInformation {
-    pub mint_a: String,
-    pub mint_b: String,
-    pub liquidity_a: f64,
-    pub liquidity_b: f64,
-    pub time: i64,
-
-    #[serde(rename = "liquidityAinUsd")]
-    pub liquidity_a_in_usd: f64,
-    #[serde(rename = "liquidityBinUsd")]
-    pub liquidity_b_in_usd: f64,
+        match StringOrStruct::deserialize(deserializer)? {
+            StringOrStruct::String(_) => Ok(Vec::new()),
+            StringOrStruct::Struct(i) => Ok(i),
+        }
+    }
 }

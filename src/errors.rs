@@ -1,7 +1,10 @@
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
-pub struct BonfidaContentError {}
+pub struct BonfidaContentError {
+    pub success: bool,
+    pub data: String,
+}
 
 error_chain! {
 
